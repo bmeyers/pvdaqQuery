@@ -3,9 +3,10 @@ from pvdaq_query.utilities import progress
 
 from time import time
 import requests
+from io import StringIO
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+from datetime import timedelta
 
 
 def get_pvdaq_data(sysid=2, api_key = 'DEMO_KEY', year=2011):
@@ -57,16 +58,19 @@ def get_pvdaq_data(sysid=2, api_key = 'DEMO_KEY', year=2011):
     df = df.reindex(index=time_index, method='nearest')
     return df.fillna(value=0)
 
-def make_D(df):
+def make_D(df, key='dc_power'):
     if df is not None:
         n_steps = int(24 * 60 * 60 / df.index.freq.n)
-        D = df['dc_power'].values.reshape(n_steps, -1, order='F')
+        D = df[key].values.reshape(n_steps, -1, order='F')
         return D
     else:
         return
 
 def plot_D(D, figsize=(12, 6)):
     if D is not None:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+
         with sns.axes_style("white"):
             fig, ax = plt.subplots(nrows=1, figsize=figsize)
             foo = ax.imshow(D, cmap='hot', interpolation='none', aspect='auto', vmin=0)
