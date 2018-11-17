@@ -2,11 +2,12 @@
 from pvdaq_query.utilities import progress
 
 from time import time
-import requests
 from io import StringIO
+from datetime import timedelta
+
+import requests
 import pandas as pd
 import numpy as np
-from datetime import timedelta
 
 
 def get_pvdaq_data(sysid=2, api_key = 'DEMO_KEY', year=2011):
