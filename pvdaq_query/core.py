@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 
 
-def get_pvdaq_data(sysid=2, api_key = 'DEMO_KEY', year=2011):
+def get_pvdaq_data(sysid=2, api_key = 'DEMO_KEY', year=2011, delim=','):
     """
     This fuction queries one or more years of raw PV system data from NREL's PVDAQ data service:
             https://maps.nrel.gov/pvdaq/
@@ -40,7 +40,7 @@ def get_pvdaq_data(sysid=2, api_key = 'DEMO_KEY', year=2011):
         if int(response.status_code) != 200:
             print('\n error: ', response.status_code)
             return
-        df = pd.read_csv(StringIO(response.text))
+        df = pd.read_csv(StringIO(response.text), delimiter=delim)
         df_list.append(df)
         it += 1
     tf = time()
@@ -48,8 +48,14 @@ def get_pvdaq_data(sysid=2, api_key = 'DEMO_KEY', year=2011):
     # concatenate the list of yearly data frames
     df = pd.concat(df_list, axis=0)
     # convert index to timeseries
-    df['Date-Time'] = pd.to_datetime(df['Date-Time'])
-    df.set_index('Date-Time', inplace=True)
+    try:
+        df['Date-Time'] = pd.to_datetime(df['Date-Time'])
+        df.set_index('Date-Time', inplace=True)
+    except KeyError:
+        time_cols = [col for col in df.columns if np.logical_or('Time' in col, 'time' in col)]
+        key = time_cols[0]
+        df[key] = pd.to_datetime(df[key])
+        df.set_index(key, inplace=True)
     # standardize the timeseries axis to a regular frequency over a full set of days
     diff = (df.index[1:] - df.index[:-1]).seconds
     freq = int(np.median(diff))                  # the number of seconds between each measurement
