@@ -46,7 +46,7 @@ def get_pvdaq_data(sysid=2, api_key = 'DEMO_KEY', year=2011, delim=','):
     tf = time()
     progress(it, len(year), 'queries complete in {:.1f} seconds       '.format(tf - ti))
     # concatenate the list of yearly data frames
-    df = pd.concat(df_list, axis=0)
+    df = pd.concat(df_list, axis=0, sort=True)
     # convert index to timeseries
     try:
         df['Date-Time'] = pd.to_datetime(df['Date-Time'])
